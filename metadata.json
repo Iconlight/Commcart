@@ -1,0 +1,6 @@
+{
+  "name": "CommCart",
+  "description": "Social-commerce platform enabling businesses to sell products via Instagram DMs with automated checkout and M-Pesa payments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
