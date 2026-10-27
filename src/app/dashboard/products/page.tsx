@@ -7,6 +7,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../../lib/supabase/client.ts';
 import { navigateTo } from '../../../lib/navigation.ts';
 import { useAuth } from '../../../context/AuthContext.tsx';
+import DashboardNav from '../../../components/dashboard/DashboardNav.tsx';
 import type { Product, ProductStatus } from '../../../types/database.types.ts';
 import {
   Package,
@@ -133,70 +134,14 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 animate-fadeIn">
-      {/* Top Bar */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-6 lg:px-8">
-          <div className="flex items-center gap-4 sm:gap-6">
-            <a
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-950 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Home</span>
-            </a>
-            <div className="h-4 w-px bg-slate-200 hidden sm:block" />
-            <a
-              href="/"
-              className="text-xl font-bold tracking-tight text-slate-950 hover:text-emerald-700 transition-colors"
-            >
-              CommCart
-            </a>
-            {organization && (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-600">
-                <span className="font-semibold text-slate-900">{organization.name}</span>
-                <span>·</span>
-                <span className="font-mono text-emerald-700">{organization.default_currency}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="hidden md:inline-block text-xs font-medium text-slate-600 truncate max-w-[200px]">
-              {user?.email}
-            </span>
-            <button
-              onClick={signOut}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-colors"
-            >
-              <LogOut className="h-3.5 w-3.5 text-slate-500" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Top Bar & Dashboard Tabs */}
+      <DashboardNav
+        activeTab="products"
+        productCount={products.length}
+      />
 
       {/* Main Container */}
       <main className="mx-auto max-w-6xl px-6 py-8 lg:px-8">
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200 gap-6 text-sm font-medium mb-8">
-          <a
-            href="/dashboard/products"
-            className="pb-3 border-b-2 border-emerald-600 text-slate-950 font-semibold flex items-center gap-2"
-          >
-            <Package className="h-4 w-4 text-emerald-600" />
-            <span>Products</span>
-            <span className="ml-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-              {products.length}
-            </span>
-          </a>
-          <a
-            href="/dashboard"
-            className="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2 transition-colors"
-          >
-            <Building2 className="h-4 w-4 text-slate-400" />
-            <span>Store & Workspace Settings</span>
-          </a>
-        </div>
 
         {/* Feedback Alert */}
         {feedbackMsg && (

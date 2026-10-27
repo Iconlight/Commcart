@@ -48,7 +48,10 @@ async function runMigration() {
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('profiles', 'organizations', 'organization_members', 'products');
+      AND table_name IN (
+        'profiles', 'organizations', 'organization_members', 'products',
+        'social_accounts', 'social_account_tokens', 'instagram_posts', 'post_product_links', 'automation_rules', 'message_templates'
+      );
     `);
 
     console.log(

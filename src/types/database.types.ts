@@ -68,6 +68,158 @@ export interface Database {
         };
         Relationships: [];
       };
+      social_accounts: {
+        Row: SocialAccount;
+        Insert: {
+          id?: string;
+          organization_id: string;
+          platform?: SocialAccountPlatform;
+          external_account_id: string;
+          username: string;
+          connection_status?: SocialAccountStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          platform?: SocialAccountPlatform;
+          external_account_id?: string;
+          username?: string;
+          connection_status?: SocialAccountStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      instagram_posts: {
+        Row: InstagramPost;
+        Insert: {
+          id?: string;
+          organization_id: string;
+          social_account_id: string;
+          external_media_id: string;
+          caption?: string | null;
+          media_type: string;
+          media_url?: string | null;
+          permalink?: string | null;
+          thumbnail_url?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          social_account_id?: string;
+          external_media_id?: string;
+          caption?: string | null;
+          media_type?: string;
+          media_url?: string | null;
+          permalink?: string | null;
+          thumbnail_url?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      post_product_links: {
+        Row: PostProductLink;
+        Insert: {
+          id?: string;
+          organization_id: string;
+          instagram_post_id: string;
+          product_id: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          instagram_post_id?: string;
+          product_id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      automation_rules: {
+        Row: AutomationRule;
+        Insert: {
+          id?: string;
+          organization_id: string;
+          social_account_id: string;
+          instagram_post_id: string;
+          product_id?: string | null;
+          name: string;
+          trigger_type?: TriggerType;
+          keywords: string[];
+          match_mode?: MatchMode;
+          is_enabled?: boolean;
+          private_reply_message?: string | null;
+          checkout_intro_message?: string | null;
+          product_details_message?: string | null;
+          payment_instructions_message?: string | null;
+          payment_confirmation_message?: string | null;
+          payment_failed_message?: string | null;
+          order_confirmation_message?: string | null;
+          variant_quantity_message?: string | null;
+          delivery_details_message?: string | null;
+          template_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          social_account_id?: string;
+          instagram_post_id?: string;
+          product_id?: string | null;
+          name?: string;
+          trigger_type?: TriggerType;
+          keywords?: string[];
+          match_mode?: MatchMode;
+          is_enabled?: boolean;
+          private_reply_message?: string | null;
+          checkout_intro_message?: string | null;
+          product_details_message?: string | null;
+          payment_instructions_message?: string | null;
+          payment_confirmation_message?: string | null;
+          payment_failed_message?: string | null;
+          order_confirmation_message?: string | null;
+          variant_quantity_message?: string | null;
+          delivery_details_message?: string | null;
+          template_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      message_templates: {
+        Row: MessageTemplate;
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          template_type: TemplateType;
+          content: string;
+          is_default?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          template_type?: TemplateType;
+          content?: string;
+          is_default?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       orders: {
         Row: Order;
         Insert: Omit<Order, 'id' | 'created_at' | 'updated_at'>;
@@ -196,3 +348,121 @@ export interface MpesaTransactionRecord {
   created_at: string;
   updated_at: string;
 }
+
+export type SocialAccountPlatform = 'instagram' | 'facebook' | 'tiktok';
+export type SocialAccountStatus = 'connected' | 'expired' | 'disconnected' | 'connecting' | 'error';
+
+export interface SocialAccount {
+  id: string;
+  organization_id: string;
+  platform: SocialAccountPlatform;
+  external_account_id: string;
+  username: string;
+  connection_status: SocialAccountStatus;
+  facebook_page_id?: string | null;
+  facebook_page_name?: string | null;
+  last_error?: string | null;
+  is_demo?: boolean;
+  connected_at?: string | null;
+  last_synced_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SocialAccountToken {
+  id: string;
+  social_account_id: string;
+  access_token: string;
+  token_type: string;
+  expires_at: string | null;
+  scopes: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InstagramPost {
+  id: string;
+  organization_id: string;
+  social_account_id: string;
+  external_media_id: string;
+  caption: string | null;
+  media_type: string;
+  media_url: string | null;
+  permalink: string | null;
+  thumbnail_url: string | null;
+  published_at: string | null;
+  is_demo?: boolean;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  social_account?: SocialAccount;
+  linked_products?: Product[];
+}
+
+export interface PostProductLink {
+  id: string;
+  organization_id: string;
+  instagram_post_id: string;
+  product_id: string;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  product?: Product;
+  post?: InstagramPost;
+}
+
+export type TriggerType = 'comment_keyword' | 'dm_keyword';
+export type MatchMode = 'exact' | 'whole_word';
+
+export interface AutomationRule {
+  id: string;
+  organization_id: string;
+  social_account_id: string;
+  instagram_post_id: string;
+  product_id: string | null;
+  name: string;
+  trigger_type: TriggerType;
+  keywords: string[];
+  match_mode: MatchMode;
+  is_enabled: boolean;
+  private_reply_message?: string | null;
+  checkout_intro_message?: string | null;
+  product_details_message?: string | null;
+  payment_instructions_message?: string | null;
+  payment_confirmation_message?: string | null;
+  payment_failed_message?: string | null;
+  order_confirmation_message?: string | null;
+  variant_quantity_message?: string | null;
+  delivery_details_message?: string | null;
+  template_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  social_account?: SocialAccount;
+  post?: InstagramPost;
+  product?: Product | null;
+}
+
+export type TemplateType =
+  | 'private_reply'
+  | 'checkout_intro'
+  | 'product_details'
+  | 'variant_quantity'
+  | 'delivery_details'
+  | 'payment_instructions'
+  | 'payment_confirmation'
+  | 'payment_failed'
+  | 'order_confirmation'
+  | 'custom';
+
+export interface MessageTemplate {
+  id: string;
+  organization_id: string;
+  name: string;
+  template_type: TemplateType;
+  content: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+

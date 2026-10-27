@@ -32,8 +32,14 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const isProd = process.env.NODE_ENV === 'production';
 
-// Standard middlewares
-app.use(express.json());
+// Standard middlewares (keep raw body for Meta webhook signatures)
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      (req as Request & { rawBody?: Buffer }).rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -150,8 +156,16 @@ app.get('/api/auth/me', async (req: Request, res: Response) => {
   }
 });
 
+import { completeInstagramOAuth, instagramRouter } from './src/server/instagram.ts';
+import { processInstagramWebhook } from './src/server/conversation.ts';
+import { handleMpesaCallback } from './src/server/mpesa.ts';
+import { verifyMetaSignature } from './src/server/meta.ts';
+
+// Mount Instagram Graph API integration routes
+app.use('/api/instagram', instagramRouter);
+
 // -----------------------------------------------------------------------------
-// Meta & Instagram Graph API Webhook Endpoints
+// Meta & Instagram Graph API Webhook & OAuth Endpoints
 // -----------------------------------------------------------------------------
 
 app.get('/api/webhooks/instagram', (req: Request, res: Response) => {
@@ -178,32 +192,31 @@ app.get('/api/webhooks/instagram', (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/webhooks/instagram', (req: Request, res: Response) => {
-  console.log('[Meta Webhook] Event payload received:', JSON.stringify(req.body, null, 2));
-  res.status(200).send('EVENT_RECEIVED');
-});
-
-app.get('/api/auth/instagram/callback', (req: Request, res: Response) => {
-  const { code, state, error, error_description } = req.query;
-
-  if (error) {
-    console.error('[Instagram OAuth] Error callback:', { error, error_description });
-    res.status(400).send(`Authentication error: ${error_description || error}`);
-    return;
+app.post('/api/webhooks/instagram', async (req: Request, res: Response) => {
+  const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
+  const signature = String(req.header('x-hub-signature-256') || '');
+  const verified = verifyMetaSignature(rawBody || Buffer.from(JSON.stringify(req.body || {})), signature);
+  if (!verified.ok) {
+    console.warn('[Meta Webhook] Signature rejected:', verified.reason);
+    return res.status(401).send(verified.reason || 'Invalid signature');
   }
 
-  console.log('[Instagram OAuth] Authorization code received:', { code, state });
-  res.redirect('/?auth=instagram_success');
+  res.status(200).send('EVENT_RECEIVED');
+  try {
+    const results = await processInstagramWebhook(req.body);
+    console.log('[Meta Webhook] Processed:', JSON.stringify(results));
+  } catch (err) {
+    console.error('[Meta Webhook] Processing error:', err);
+  }
 });
+
+app.get('/api/auth/instagram/callback', completeInstagramOAuth);
 
 // -----------------------------------------------------------------------------
 // Safaricom M-Pesa Daraja Webhook Endpoints
 // -----------------------------------------------------------------------------
 
-app.post('/api/webhooks/mpesa/callback', (req: Request, res: Response) => {
-  console.log('[M-Pesa Webhook] Callback payload received:', JSON.stringify(req.body, null, 2));
-  res.status(200).json({ ResultCode: 0, ResultDesc: 'Accepted' });
-});
+app.post('/api/webhooks/mpesa/callback', handleMpesaCallback);
 
 // Health check endpoint
 app.get('/api/health', (_req: Request, res: Response) => {

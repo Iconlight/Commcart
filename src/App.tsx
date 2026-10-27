@@ -14,6 +14,9 @@ import OnboardingPage from './app/onboarding/page.tsx';
 import ProductsPage from './app/dashboard/products/page.tsx';
 import NewProductPage from './app/dashboard/products/new/page.tsx';
 import EditProductPage from './app/dashboard/products/edit/page.tsx';
+import InstagramPostsPage from './app/dashboard/posts/page.tsx';
+import AutomationsPage from './app/dashboard/automations/page.tsx';
+import MessagesPage from './app/dashboard/messages/page.tsx';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { subscribeToNavigation, navigateTo } from './lib/navigation.ts';
 import { Loader2 } from 'lucide-react';
@@ -126,6 +129,12 @@ function AppRouter() {
         return <NewProductPage />;
       case '/dashboard/products/edit':
         return <EditProductPage />;
+      case '/dashboard/posts':
+        return <InstagramPostsPage />;
+      case '/dashboard/automations':
+        return <AutomationsPage />;
+      case '/dashboard/messages':
+        return <MessagesPage />;
       case '/dashboard':
         return <DashboardPage />;
       default:
